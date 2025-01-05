@@ -18,6 +18,10 @@ on:
         description: 'upstream_android_common'     
         required: true
         default: true
+      upstream_android_common_tag:
+        type: string
+        description: 'input android_common_tag default all'     
+        required: false
       upstream_lineageos:
         type: boolean
         description: 'upstream_lineageos'     
@@ -50,7 +54,7 @@ jobs:
       run: |
         cd kernel && git config user.email degidevops@gmail.com && git config user.name degidevops
         git remote add upstream https://android.googlesource.com/kernel/common.git
-        git fetch upstream deprecated/android-4.14-stable
+        git fetch upstream ${{ github.event.inputs.upstream_android_common_tag }}
         
     - name: LineageOs Upstream
       if: ${{ github.event_name == 'workflow_dispatch' && inputs.upstream_lineageos }}
@@ -60,22 +64,22 @@ jobs:
         git remote add upstream https://github.com/LineageOS/android_kernel_xiaomi_sm6150.git
         git fetch upstream
         
-    - name: upstream notif
-      uses: appleboy/telegram-action@master
-      with:
-        to: ${{ secrets.TELEID }}
-        token: ${{ secrets.TELETOKEN }}
-        message: |
-          fetch upstream complete
+#    - name: upstream notif
+#      uses: appleboy/telegram-action@master
+#      with:
+#        to: ${{ secrets.TELEID }}
+#        token: ${{ secrets.TELETOKEN }}
+#        message: |
+#          fetch upstream complete
 
     - name: Setup Debug
       uses: mxschmitt/action-tmate@v3
       if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
       
-    - name: end notif
-      uses: appleboy/telegram-action@master
-      with:
-        to: ${{ secrets.TELEID }}
-        token: ${{ secrets.TELETOKEN }}
-        message: |
-          Action end
+#    - name: end notif
+#      uses: appleboy/telegram-action@master
+#      with:
+#        to: ${{ secrets.TELEID }}
+#        token: ${{ secrets.TELETOKEN }}
+#        message: |
+#          Action end
