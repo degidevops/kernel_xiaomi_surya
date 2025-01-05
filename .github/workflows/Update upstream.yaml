@@ -1,0 +1,81 @@
+name: Merge Upstream
+
+on:
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        type: boolean
+        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'     
+        required: true
+        default: true
+      upstream_linux-stable:
+        type: boolean
+        description: 'upstream_linux-stable'     
+        required: true
+        default: false
+      upstream_android_common:
+        type: boolean
+        description: 'upstream_android_common'     
+        required: true
+        default: true
+      upstream_lineageos:
+        type: boolean
+        description: 'upstream_lineageos'     
+        required: true
+        default: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout kernel source
+      uses: actions/checkout@v3
+      with:
+        repository: degidevops/kernel_xiaomi_surya
+        ref: richelieu
+        path: kernel
+        fetch-depth: 0
+        token: ${{ secrets.GITAUTHTOKEN }}
+        
+    - name: Linux Stable Upstream
+      if: ${{ github.event_name == 'workflow_dispatch' && inputs.upstream_linux-stable }}
+      shell: bash
+      run: |
+        cd kernel && git config user.email degidevops@gmail.com && git config user.name degidevops
+        git remote add upstream https://kernel.googlesource.com/pub/scm/linux/kernel/git/stable/linux-stable.git
+        git fetch upstream
+        
+    - name: Android Common Upstream
+      if: ${{ github.event_name == 'workflow_dispatch' && inputs.upstream_android_common }}
+      shell: bash
+      run: |
+        cd kernel && git config user.email degidevops@gmail.com && git config user.name degidevops
+        git remote add upstream https://android.googlesource.com/kernel/common.git
+        git fetch upstream deprecated/android-4.14-stable
+        
+    - name: LineageOs Upstream
+      if: ${{ github.event_name == 'workflow_dispatch' && inputs.upstream_lineageos }}
+      shell: bash
+      run: |
+        cd kernel && git config user.email degidevops@gmail.com && git config user.name degidevops
+        git remote add upstream https://github.com/LineageOS/android_kernel_xiaomi_sm6150.git
+        git fetch upstream
+        
+    - name: upstream notif
+      uses: appleboy/telegram-action@master
+      with:
+        to: ${{ secrets.TELEID }}
+        token: ${{ secrets.TELETOKEN }}
+        message: |
+          fetch upstream complete
+
+    - name: Setup Debug
+      uses: mxschmitt/action-tmate@v3
+      if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
+      
+    - name: end notif
+      uses: appleboy/telegram-action@master
+      with:
+        to: ${{ secrets.TELEID }}
+        token: ${{ secrets.TELETOKEN }}
+        message: |
+          Action end
