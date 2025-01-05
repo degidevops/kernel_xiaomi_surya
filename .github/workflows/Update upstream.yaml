@@ -73,9 +73,11 @@ jobs:
 #          fetch upstream complete
 
     - name: Setup Debug
-      uses: mxschmitt/action-tmate@v3
+      uses: mxschmitt/action-tmate@v3.19
       if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
-      
+      with:
+        limit-access-to-actor: true
+        
 #    - name: end notif
 #      uses: appleboy/telegram-action@master
 #      with:
